@@ -1,6 +1,4 @@
-
-// === Auto Mining AFK Bot ===
-// Works with Node.js 22+ and Mineflayer 4.12+
+// === Auto Mining AFK Bot (Improved Warp System) ===
 
 const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals: { GoalBlock } } = require('mineflayer-pathfinder');
@@ -9,24 +7,50 @@ const mineflayerTool = require('mineflayer-tool').plugin;
 function createBot() {
   const bot = mineflayer.createBot({
     host: 'mc.leftypvp.net', // 🌐 Server IP
-    port: 25565,             // 🔌 Server Port
-    username: 'AssassinPlayZ',     // 🤖 Bot name
-    version: '1.21.1'        // ⚙️ Game version
+    port: 25565,             // 🔌 Port
+    username: 'AssassinPlayZ', // 🤖 Username
+    version: '1.21.1'        // ⚙️ Version
   });
 
   bot.loadPlugin(pathfinder);
   bot.loadPlugin(mineflayerTool);
 
-  bot.once('spawn', async () => {
-    console.log('✅ Bot spawned.');
+  bot.once('spawn', () => {
+    console.log('✅ Bot joined the server.');
 
-    // Auto login and warp
-    setTimeout(() => bot.chat('/login KillerAadi1'), 1500);
-    setTimeout(() => bot.chat('/is warp abhay6660 afk'), 4000);
+    // Login first
+    setTimeout(() => {
+      bot.chat('/login KillerAadi1');
+      console.log('🔐 Sent login command.');
+    }, 2000);
 
-    // Wait 8s before mining starts
-    setTimeout(startMining, 8000);
+    // Delay before warping
+    setTimeout(() => {
+      tryWarp();
+    }, 8000);
   });
+
+  // Try warping until success
+  function tryWarp(attempt = 1) {
+    if (attempt > 5) {
+      console.log('⚠️ Warp failed after 5 tries.');
+      startMining();
+      return;
+    }
+
+    console.log(`🚀 Attempting warp (${attempt}/5)...`);
+    bot.chat('/is warp abhay6660 afk');
+
+    setTimeout(() => {
+      if (!bot.entity.position || bot.entity.position.y < 5) {
+        console.log('⏳ Warp not successful yet, retrying...');
+        tryWarp(attempt + 1);
+      } else {
+        console.log('✅ Warp successful! Starting mining soon...');
+        setTimeout(startMining, 5000);
+      }
+    }, 5000);
+  }
 
   async function startMining() {
     const blockType = ['stone', 'deepslate', 'iron_ore', 'coal_ore', 'diamond_ore'];
@@ -55,7 +79,6 @@ function createBot() {
     }
   }
 
-  // Reconnect if disconnected
   bot.on('end', () => {
     console.log('🔄 Bot disconnected. Reconnecting in 5s...');
     setTimeout(createBot, 5000);

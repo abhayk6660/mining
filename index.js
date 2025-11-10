@@ -1,4 +1,5 @@
 // === Auto Mining AFK Bot (Improved Warp System) ===
+process.stdout.write('\x1Bc'); // clears Railway console on each restart
 
 const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals: { GoalBlock } } = require('mineflayer-pathfinder');

@@ -1,0 +1,68 @@
+
+// === Auto Mining AFK Bot ===
+// Works with Node.js 22+ and Mineflayer 4.12+
+
+const mineflayer = require('mineflayer');
+const { pathfinder, Movements, goals: { GoalBlock } } = require('mineflayer-pathfinder');
+const mineflayerTool = require('mineflayer-tool').plugin;
+
+function createBot() {
+  const bot = mineflayer.createBot({
+    host: 'mc.leftypvp.net', // 🌐 Server IP
+    port: 25565,             // 🔌 Server Port
+    username: 'Assassinplayz',     // 🤖 Bot name
+    version: '1.21.1'        // ⚙️ Game version
+  });
+
+  bot.loadPlugin(pathfinder);
+  bot.loadPlugin(mineflayerTool);
+
+  bot.once('spawn', async () => {
+    console.log('✅ Bot spawned.');
+
+    // Auto login and warp
+    setTimeout(() => bot.chat('/login KillerAadi1'), 1500);
+    setTimeout(() => bot.chat('/is warp abhay6660 afk'), 4000);
+
+    // Wait 8s before mining starts
+    setTimeout(startMining, 8000);
+  });
+
+  async function startMining() {
+    const blockType = ['stone', 'deepslate', 'iron_ore', 'coal_ore', 'diamond_ore'];
+    console.log('⛏️ Searching for mineable blocks...');
+
+    const target = bot.findBlock({
+      matching: block => blockType.includes(block.name),
+      maxDistance: 6
+    });
+
+    if (!target) {
+      console.log('❌ No block nearby. Waiting...');
+      setTimeout(startMining, 3000);
+      return;
+    }
+
+    try {
+      console.log('🔨 Mining:', target.name);
+      await bot.tool.equipForBlock(target, { requireHarvest: false });
+      await bot.dig(target);
+      console.log('✅ Mined:', target.name);
+      setTimeout(startMining, 1000);
+    } catch (err) {
+      console.log('⚠️ Mining error:', err.message);
+      setTimeout(startMining, 2000);
+    }
+  }
+
+  // Reconnect if disconnected
+  bot.on('end', () => {
+    console.log('🔄 Bot disconnected. Reconnecting in 5s...');
+    setTimeout(createBot, 5000);
+  });
+
+  bot.on('kicked', console.log);
+  bot.on('error', console.log);
+}
+
+createBot();

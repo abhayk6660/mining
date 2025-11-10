@@ -10,7 +10,7 @@ function createBot() {
   const bot = mineflayer.createBot({
     host: 'mc.leftypvp.net', // 🌐 Server IP
     port: 25565,             // 🔌 Server Port
-    username: 'Assassinplayz',     // 🤖 Bot name
+    username: 'AssassinPlayZ',     // 🤖 Bot name
     version: '1.21.1'        // ⚙️ Game version
   });
 
